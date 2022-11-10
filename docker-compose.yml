@@ -1,15 +1,49 @@
 version: "3.9"
 services:
   app:
-    image: cloud-run-test
     build:
-      context: ./Dockerfile
+      context: .
+      dockerfile: ./docker/app/Dockerfile
       args:
-        - target=deploy-builder
+        - target=deploy
+    image: gcr.io/todo-app-20221107/go-app-test
     environment:
       TODO_ENV: prod
       PORT: 8080
+      TODO_DB_HOST: tododb01
+      TODO_DB_PORT: 8080
+      TODO_DB_USER: todo
+      TODO_DB_PASSWORD: P@ssw0rd
+      TODO_DB_NAME: todo
+      TODO_REDIS_HOST: todo-redis
+      TODO_REDIS_PORT: 8080
     volumes:
       - .:/app
     ports:
       - '8080:8080'
+  tododb01:
+    build: ./docker/db/
+    image: gcr.io/todo-app-20221107/mysql
+    platform: linux/amd64
+    container_name:  tododb01
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_USER: todo
+      MYSQL_PASSWORD: P@ssw0rd
+      MYSQL_DATABASE: todo
+      MYSQL_TCP_PORT: 8080
+    volumes:
+      - tododb01-data:/var/lib/mysql
+      - $PWD/docker/db/my.cnf:/etc/mysql/my.cnf:cached
+    ports:
+      - '3306:8080'
+    command: --port 8080
+  todo-redis:
+    build: ./docker/redis/
+    image: gcr.io/todo-app-20221107/redis
+    container_name: todo-redis
+    ports:
+      - '6379:8080'
+    command: --port 8080
+volumes:
+  tododb01-data:

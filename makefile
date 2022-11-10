@@ -6,6 +6,10 @@ build:	#	build docker image to deploy
 	docker build -t taiti09/cloud-run-test:${DOCKER_TAG} \
 			--target deploy ./
 
+build-gcp: #	build docker image to cloud deploy
+	docker build -t gcr.io/todo-app-20221107/cloud-run-test:${DOCKER_TAG} \
+			--target deploy ./
+
 up:
 	docker compose up
 
