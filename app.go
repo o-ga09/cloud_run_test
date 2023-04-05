@@ -18,6 +18,7 @@ func stgServer() {
 	}
 
 	mux := http.NewServeMux()
+	log.Printf("port : %s",port)
 	mux.HandleFunc("/hello", HelloWorldHandler)
 
 
@@ -27,5 +28,7 @@ func stgServer() {
 }
 
 func HelloWorldHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("started server")
+	log.Printf(r.RemoteAddr)
 	fmt.Fprintf(w,"Hello %s!",r.URL.Path[1:])
 }

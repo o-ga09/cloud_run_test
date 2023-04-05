@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: go-app-service
+spec:
+  type: NodePort
+  selector:
+    app: app-server
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+    name: app-server
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-server
+spec:
+  selector:
+    matchLabels:
+      app: app-server
+  strategy:
+    type: Recreate
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: app-server
+    spec:
+      containers:
+      - name: app-server
+        image: gcr.io/todo-app-20221107/go-app-test:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          name: app-server
+        env:
+          - name: PORT
+            value: '8080'
+          - name: TODO_ENV
+            value: prod
+          - name: TODO_DB_HOST
+            value: tododb01
+          - name: TODO_DB_PORT
+            value: '3306'
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                name: dbsecret
+                key: MYSQL_USER
+          - name: TODO_DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: dbsecret
+                key: MYSQL_PASSWORD
+          - name: TODO_DB_NAME
+            valueFrom:
+              secretKeyRef:
+                name: dbsecret
+                key: MYSQL_DATABASE
+          - name: TODO_REDIS_HOST
+            valueFrom:
+              secretKeyRef:
+                name: redissecret
+                key: TODO_REDIS_HOST
+          - name: TODO_REDIS_PORT
+            valueFrom:
+              secretKeyRef:
+                name: redissecret
+                key: TODO_REDIS_PORT

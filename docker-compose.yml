@@ -17,14 +17,17 @@ services:
       TODO_DB_NAME: todo
       TODO_REDIS_HOST: todo-redis
       TODO_REDIS_PORT: 8080
-    volumes:
-      - .:/app
+    # volumes:
+    #   - .:/app
     ports:
       - '8080:8080'
   tododb01:
-    build: ./docker/db/
+    build:
+      context: .
+      dockerfile: ./docker/db/Dockerfile
     image: gcr.io/todo-app-20221107/mysql
-    platform: linux/amd64
+    platform: linux/arm64
+    #platform: linux/amd64
     container_name:  tododb01
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
@@ -32,6 +35,7 @@ services:
       MYSQL_PASSWORD: P@ssw0rd
       MYSQL_DATABASE: todo
       MYSQL_TCP_PORT: 8080
+      MYSQL_ROOT_PASSWORD: P@ssw0rd
     volumes:
       - tododb01-data:/var/lib/mysql
       - $PWD/docker/db/my.cnf:/etc/mysql/my.cnf:cached
@@ -39,7 +43,9 @@ services:
       - '3306:8080'
     command: --port 8080
   todo-redis:
-    build: ./docker/redis/
+    build:
+      context: .
+      dockerfile: ./docker/redis/Dockerfile
     image: gcr.io/todo-app-20221107/redis
     container_name: todo-redis
     ports:

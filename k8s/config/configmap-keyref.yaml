@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: env-config
+  namespace: default
+data:
+  PORT: '8080'
+  TODO_ENV: prod
+  TODO_DB_HOST: tododb01
+  TODO_DB_PORT: '3306'
+  TODO_DB_USER: todo
+  TODO_DB_PASSWORD: P@ssw0rd
+  TODO_DB_NAME: todo
+  TODO_REDIS_HOST: todo-redis
+  TODO_REDIS_PORT: '6379'

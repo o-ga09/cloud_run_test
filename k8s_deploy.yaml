@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-server
+spec:
+  selector:
+    matchLabels:
+      app: app-server
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: app-server
+spec:
+  selector:
+    matchLabels:
+      app: db-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: db-server
+spec:
+  selector:
+    matchLabels:
+      app: redis-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: redis-server
+    spec:
+      containers:
+      - name: app-server
+        image: gcr.io/todo-app-20221107/go-app-test:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        env:
+          - name: PORT
+            valueFrom:
+              configMapKeyRef:
+                name: env-config
+                key: PORT  
+      - name: db-server
+        image: gcr.io/todo-app-20221107/mysql:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3306
+        env:
+          - name: MYSQL_ALLOW_EMPTY_PASSWORD
+            valueFrom:
+              configMapKeyRef:
+                name: env-config
+                key: MYSQL_ALLOW_EMPTY_PASSWORD
+            containers:
+        env:
+          - name: MYSQL_USER
+            valueFrom:
+              configMapKeyRef:
+                name: env-config
+                key: MYSQL_USER
+            containers:
+        env:
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              configMapKeyRef:
+                name: env-config
+                key: MYSQL_PASSWORD
+            containers:
+        env:
+          - name: MYSQL_DATABASE
+            valueFrom:
+              configMapKeyRef:
+                name: env-config
+                key: MYSQL_DATABASE
+            containers:
+        env:
+          - name: MYSQL_TCP_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: env-config
+                key: MYSQL_TCP_PORT
+            containers:
+        env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              configMapKeyRef:
+                name: env-config
+                key: MYSQL_ROOT_PASSWORD                                                                 
+      - name: redis-server
+        image: gcr.io/todo-app-20221107/redis:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 6379

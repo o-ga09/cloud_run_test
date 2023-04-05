@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: go-db-service
+spec:
+  type: ClusterIP
+  selector:
+    app: db-server
+  ports:
+  - port: 3306
+    targetPort: 3306
+    protocol: TCP
+    name: db-server
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pv-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-server
+spec:
+  selector:
+    matchLabels:
+      app: db-server
+  strategy:
+    type: Recreate
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: db-server
+    spec:
+      containers:
+      - name: db-server
+        image: gcr.io/todo-app-20221107/mysql:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3306
+          name: db-server
+        env:
+          - name: MYSQL_ALLOW_EMPTY_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: dbsecret
+                key: MYSQL_ALLOW_EMPTY_PASSWORD
+        env:
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                name: dbsecret
+                key: MYSQL_USER
+        env:
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: dbsecret
+                key: MYSQL_PASSWORD
+        env:
+          - name: MYSQL_DATABASE
+            valueFrom:
+              secretKeyRef:
+                name: dbsecret
+                key: MYSQL_DATABASE
+        env:
+          - name: MYSQL_TCP_PORT
+            valueFrom:
+              secretKeyRef:
+                name: dbsecret
+                key: MYSQL_TCP_PORT
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: dbsecret
+              key: MYSQL_ROOT_PASSWORD
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: mysql-pv-claim                                                                 
